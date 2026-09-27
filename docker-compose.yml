@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  pathfinder-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pathfinder-ai-builder
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

@@ -1,0 +1,86 @@
+========================================================================
+Pathfinder 2e Character Forge & AI Studio
+Copyright (c) 2024-2026 Pathfinder Character Creator Contributors
+Licensed under the Apache License, Version 2.0 (the "License").
+========================================================================
+
+This product includes software and AI models developed by third parties,
+subject to the following licenses and attribution requirements:
+
+------------------------------------------------------------------------
+1. META LLAMA 3.2 (Conversational Inferrer Model)
+------------------------------------------------------------------------
+- Model: Llama-3.2-3B-Instruct (GGUF Quantization)
+- Original Creator: Meta Platforms, Inc.
+- GGUF Quantization: bartowski (huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF)
+- Original Repository: meta-llama/Llama-3.2-3B-Instruct (huggingface.co/meta-llama/Llama-3.2-3B-Instruct)
+- License: Meta Llama 3.2 Community License Agreement
+  URL: https://www.llama.com/llama3/license/
+  Acceptable Use Policy: https://www.llama.com/llama3/use-policy/
+
+Attribution Notice:
+"Built with Llama 3.2"
+Llama 3.2 is licensed under the Llama 3.2 Community License, 
+Copyright (c) Meta Platforms, Inc. All Rights Reserved.
+Your use of the Llama 3.2 model weights and derived outputs must comply 
+with the Meta Llama 3.2 Community License and Acceptable Use Policy.
+
+------------------------------------------------------------------------
+2. PATHFINDERAI (Specialist Rules & Tactics Model)
+------------------------------------------------------------------------
+- Model: PathfinderAI-GGUF (Q4_K_M, Q2_K, IQ4_XS)
+- Quantizer & Host: mradermacher (huggingface.co/mradermacher/PathfinderAI-GGUF)
+- Base Architecture: Qwen 2.5 / QwQ Series fine-tuned on tabletop RPG and
+  Pathfinder rules reasoning.
+- Base Model License: Apache License, Version 2.0
+  Copyright (c) Alibaba Cloud / Qwen Team.
+- GGUF Quantization License: Apache License, Version 2.0 / Open-Weights Research.
+
+------------------------------------------------------------------------
+3. PAIZO INC. COMMUNITY USE POLICY & TRADEMARK NOTICE
+------------------------------------------------------------------------
+This application uses trademarks and/or copyrights owned by Paizo Inc.,
+used under Paizo's Community Use Policy (paizo.com/communityuse). We are
+expressly prohibited from charging you to use or access this content.
+This application is not published, endorsed, or specifically approved by
+Paizo. For more information about Paizo Inc. and Paizo products,
+please visit paizo.com.
+
+Pathfinder, the Pathfinder logo, Pathfinder Roleplaying Game, Pathfinder
+Adventure Path, and Paizo are registered trademarks of Paizo Inc.
+Pathfinder 2nd Edition (Remaster) rules and game mechanics from Player
+Core, Player Core 2, Monster Core, and GM Core are published by Paizo Inc.
+under the Open RPG Creative (ORC) License and/or Open Game License (OGL).
+
+------------------------------------------------------------------------
+4. ARCHIVES OF NETHYS SCRAPER & DATA PIPELINE
+------------------------------------------------------------------------
+- Repository: LukasParke/archives-of-nethys-scraper
+- Author: Lukas Parke (github.com/LukasParke)
+- License: MIT License
+  Copyright (c) 2024 Lukas Parke
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------
+5. LANGCHAIN & TRANSFORMERS
+------------------------------------------------------------------------
+- LangChain: Licensed under the MIT License, Copyright (c) LangChain, Inc.
+- Hugging Face Hub & Transformers: Licensed under the Apache License 2.0,
+  Copyright (c) Hugging Face Inc.

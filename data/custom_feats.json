@@ -1,0 +1,81 @@
+[
+  {
+    "id": "sundering-blow",
+    "name": "Sundering Blow",
+    "type": "Class",
+    "level": 4,
+    "category": "Fighter",
+    "actions": "2 Actions",
+    "traits": [
+      "Fighter",
+      "Flourish"
+    ],
+    "prerequisites": "Trained in Athletics",
+    "trigger": "",
+    "description": "Make a powerful melee Strike with a bludgeoning or slashing weapon. If the Strike hits, you deal full damage and the target's shield or armor takes damage equal to your Strength modifier, bypassing Hardness.",
+    "source": "Custom Homebrew"
+  },
+  {
+    "id": "verdant-canopy",
+    "name": "Verdant Canopy",
+    "type": "Ancestry",
+    "level": 1,
+    "category": "Leshy",
+    "actions": "Passive",
+    "traits": [
+      "Leshy",
+      "Plant"
+    ],
+    "prerequisites": "",
+    "trigger": "",
+    "description": "Your leafy foliage expands into a protective sun-dappled canopy. You gain a +1 circumstance bonus to saving throws against environmental heat and cold, and adjacent allies gain lesser cover from ranged attacks.",
+    "source": "Custom Homebrew"
+  },
+  {
+    "id": "adrenaline-surge",
+    "name": "Adrenaline Surge",
+    "type": "Skill",
+    "level": 2,
+    "category": "Athletics",
+    "actions": "Reaction",
+    "traits": [
+      "Skill"
+    ],
+    "prerequisites": "Expert in Athletics",
+    "trigger": "Trigger: You fail an Athletics check to Shove, Trip, or Grapple",
+    "description": "Reroll the triggering Athletics check with a +2 circumstance bonus. You must take the second result, even if it is worse.",
+    "source": "Custom Homebrew"
+  },
+  {
+    "id": "iron-will",
+    "name": "Iron Will",
+    "type": "General",
+    "level": 3,
+    "category": "All",
+    "actions": "Passive",
+    "traits": [
+      "General"
+    ],
+    "prerequisites": "Wisdom 14",
+    "trigger": "",
+    "description": "Your mental fortitude is like cold-forged iron. Your proficiency rank in Will saving throws increases from Trained to Expert. If you are already Expert, gain a +1 circumstance bonus against Emotion effects.",
+    "source": "Custom Homebrew"
+  },
+  {
+    "id": "cataclysmic-stride",
+    "name": "Cataclysmic Stride",
+    "type": "Class",
+    "level": 18,
+    "category": "Barbarian",
+    "actions": "3 Actions",
+    "traits": [
+      "Barbarian",
+      "Flourish",
+      "Rage"
+    ],
+    "prerequisites": "Legendary in Athletics",
+    "trigger": "Requirements: You are in a Rage",
+    "description": "Stride up to three times your Speed. The ground shudders along your path. Every creature within a 15-foot emanation of your final position must succeed at a Reflex save against your class DC or fall prone and take 8d10 bludgeoning damage.",
+    "source": "Custom Homebrew"
+  }
+]
