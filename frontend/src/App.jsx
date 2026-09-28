@@ -143,9 +143,29 @@ export default function App() {
   const [character, setCharacter] = useState(initialCharacter);
   const [activeTab, setActiveTab] = useState(getInitialTab);
   const [tourOpen, setTourOpen] = useState(false);
+  const [modelStatus, setModelStatus] = useState(null);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(true);
   const [diceModalOpen, setDiceModalOpen] = useState(false);
   const [lastDiceBanner, setLastDiceBanner] = useState(null);
+
+  // Poll live model & VRAM status for top badge
+  const fetchModelStatus = async () => {
+    try {
+      const res = await fetch('/api/model/status');
+      if (res.ok) {
+        const data = await res.json();
+        setModelStatus(data);
+      }
+    } catch (e) {
+      // offline fallback
+    }
+  };
+
+  useEffect(() => {
+    fetchModelStatus();
+    const interval = setInterval(fetchModelStatus, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Sync tab changes to URL so user never loses their place on reload
   const handleSelectTab = (tab) => {
@@ -256,6 +276,8 @@ export default function App() {
         onExportJson={handleExportJson}
         onImportJson={handleImportJson}
         onOpenTour={() => setTourOpen(true)}
+        modelStatus={modelStatus}
+        onSelectTab={handleSelectTab}
       />
 
       {/* Main Tab Navigation */}

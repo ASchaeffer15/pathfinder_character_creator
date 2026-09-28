@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Shield, Heart, Eye, Activity, Sparkles, Dices, 
-  RotateCcw, Download, Upload, Bot, Moon, Compass
+  RotateCcw, Download, Upload, Bot, Moon, Compass, Cpu
 } from 'lucide-react';
 
 export default function Header({ 
@@ -13,7 +13,9 @@ export default function Header({
   aiDrawerOpen,
   onExportJson,
   onImportJson,
-  onOpenTour
+  onOpenTour,
+  modelStatus,
+  onSelectTab
 }) {
   const handleHpChange = (amount) => {
     const newHp = Math.max(0, Math.min(character.maxHp, character.currentHp + amount));
@@ -55,6 +57,54 @@ export default function Header({
         </div>
 
         <div className="pb-header-actions">
+          {/* Top Model Loaded / Offloaded Status Badge */}
+          <button 
+            className="pb-model-status-badge"
+            onClick={() => onSelectTab && onSelectTab('ai-studio')}
+            title={
+              modelStatus?.is_model_loaded 
+                ? `Active in RTX 3080 Ti VRAM: ${modelStatus.active_model}. Click to view telemetry or offload.`
+                : 'Zero-Latency Rules Engine Mode (Model Offloaded). Click to load model into GPU.'
+            }
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '0.35rem 0.8rem',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: modelStatus?.is_model_loaded 
+                ? '1px solid rgba(74, 222, 128, 0.5)' 
+                : '1px solid rgba(148, 163, 184, 0.25)',
+              background: modelStatus?.is_model_loaded 
+                ? 'linear-gradient(135deg, rgba(20, 83, 45, 0.45) 0%, rgba(5, 46, 22, 0.65) 100%)' 
+                : 'linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.7) 100%)',
+              color: modelStatus?.is_model_loaded ? '#4ade80' : '#cbd5e1',
+              boxShadow: modelStatus?.is_model_loaded 
+                ? '0 0 10px rgba(74, 222, 128, 0.25)' 
+                : 'none',
+              transition: 'all 0.2s ease',
+              marginRight: 4
+            }}
+          >
+            <span style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: modelStatus?.is_model_loaded ? '#4ade80' : '#64748b',
+              boxShadow: modelStatus?.is_model_loaded ? '0 0 8px #4ade80' : 'none',
+              display: 'inline-block'
+            }} />
+            <Cpu size={14} style={{ color: modelStatus?.is_model_loaded ? '#4ade80' : '#94a3b8' }} />
+            <span>
+              {modelStatus?.is_model_loaded 
+                ? `GPU Model: Loaded (${modelStatus.active_model ? modelStatus.active_model.split('.')[0] : 'Active'})`
+                : 'GPU Model: Offloaded'}
+            </span>
+          </button>
+
           <button 
             className="pb-action-btn"
             onClick={onOpenDiceModal}
