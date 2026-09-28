@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import TabsNav from './components/TabsNav';
 import CharacterSheet from './components/CharacterSheet';
@@ -12,6 +12,7 @@ import TacticalAdvisorTab from './components/TacticalAdvisorTab';
 import AIChatDrawer from './components/AIChatDrawer';
 import DiceModal from './components/DiceModal';
 import Footer from './components/Footer';
+import ShepherdTour from './components/ShepherdTour';
 
 const initialCharacter = {
   name: "Valeros of Absalom",
@@ -126,12 +127,45 @@ const initialCharacter = {
   campaignNotes: "Encountered goblin raiders near Otari. Party consists of Valeros, Ezren, and Kyra."
 };
 
+const VALID_TABS = ['sheet', 'build', 'tactics', 'feats', 'spells', 'equipment', 'lore', 'ai-studio'];
+
+const getInitialTab = () => {
+  if (typeof window === 'undefined') return 'build';
+  const params = new URLSearchParams(window.location.search);
+  const tabParam = params.get('tab');
+  if (tabParam && VALID_TABS.includes(tabParam)) return tabParam;
+  const hash = window.location.hash.replace('#', '');
+  if (hash && VALID_TABS.includes(hash)) return hash;
+  return 'build';
+};
+
 export default function App() {
   const [character, setCharacter] = useState(initialCharacter);
-  const [activeTab, setActiveTab] = useState('build');
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+  const [tourOpen, setTourOpen] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(true);
   const [diceModalOpen, setDiceModalOpen] = useState(false);
   const [lastDiceBanner, setLastDiceBanner] = useState(null);
+
+  // Sync tab changes to URL so user never loses their place on reload
+  const handleSelectTab = (tab) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({ tab }, '', url.toString());
+    }
+  };
+
+  // Sync back/forward browser history navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const currentTab = getInitialTab();
+      setActiveTab(currentTab);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleUpdateCharacter = (updates) => {
     setCharacter(prev => ({
@@ -221,10 +255,11 @@ export default function App() {
         aiDrawerOpen={aiDrawerOpen}
         onExportJson={handleExportJson}
         onImportJson={handleImportJson}
+        onOpenTour={() => setTourOpen(true)}
       />
 
       {/* Main Tab Navigation */}
-      <TabsNav activeTab={activeTab} onSelectTab={setActiveTab} />
+      <TabsNav activeTab={activeTab} onSelectTab={handleSelectTab} />
 
       {/* Live Dice Roll Banner Notification */}
       {lastDiceBanner && (
@@ -324,7 +359,7 @@ export default function App() {
           character={character}
           onUpdateCharacter={handleUpdateCharacter}
           onRollDice={handleRollDice}
-          onSelectTab={setActiveTab}
+          onSelectTab={handleSelectTab}
         />
       </div>
 
@@ -334,6 +369,14 @@ export default function App() {
         onClose={() => setDiceModalOpen(false)}
         onRollDice={handleRollDice}
         lastRoll={lastDiceBanner}
+      />
+
+      {/* Interactive Shepherd Tour with Browser Cache Disable */}
+      <ShepherdTour
+        activeTab={activeTab}
+        onSelectTab={handleSelectTab}
+        isOpen={tourOpen}
+        onClose={() => setTourOpen(false)}
       />
     </div>
   );

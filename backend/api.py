@@ -80,7 +80,7 @@ def get_model_status():
 
 @app.post("/api/model/load")
 def load_model(req: ModelLoadRequest):
-    """Loads model to GPU via llama-cpp-python and Hugging Face."""
+    """Loads model to GPU via Transformers / PyTorch on CUDA."""
     success = model_service.load_model_async(
         repo_id=req.repo_id,
         gguf_filename=req.gguf_filename
@@ -89,6 +89,13 @@ def load_model(req: ModelLoadRequest):
         "success": success,
         "status": model_service.get_system_status()
     }
+
+@app.post("/api/model/unload")
+def unload_model():
+    """Offloads the active model from GPU VRAM to reclaim memory and resume Zero-Latency Rules Engine mode."""
+    result = model_service.unload_model()
+    return result
+
 
 @app.post("/api/chat")
 def chat_with_ai(req: ChatRequest):

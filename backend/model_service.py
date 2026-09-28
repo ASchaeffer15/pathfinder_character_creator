@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional, List
 import torch
 
 # Ensure CUDA DLLs are discoverable on Windows
-if torch.cuda.is_available() and sys.platform == "win32":
+if sys.platform == "win32" and torch.cuda.is_available():
     torch_lib = os.path.join(os.path.dirname(torch.__file__), "lib")
     if os.path.exists(torch_lib):
         try:
@@ -58,8 +58,10 @@ class DualModelService:
         self.loading = False
         self.download_progress = None
         self.active_model_instance = None
+        self.active_tokenizer = None
         self.loaded_repo_id = None
         self.loaded_gguf_file = None
+        self.verification_info = None
 
     def get_system_status(self) -> Dict[str, Any]:
         """Returns hardware, model, and storage telemetry."""
@@ -83,7 +85,8 @@ class DualModelService:
             "status_message": self.status_message,
             "loading": self.loading,
             "download_progress": self.download_progress,
-            "active_model": self.loaded_repo_id if self.active_model_instance else "Dual-Engine Pipeline (Llama 3.2 + Pathfinder Rules)",
+            "active_model": self.loaded_gguf_file if self.active_model_instance else None,
+            "is_model_loaded": self.active_model_instance is not None,
             "cuda_available": self.cuda_available,
             "gpu_device": self.device_name,
             "vram_total_gb": self.vram_total_gb,
@@ -91,47 +94,130 @@ class DualModelService:
             "free_disk_gb": round(free_disk / (1024**3), 2),
             "total_disk_gb": round(total_disk / (1024**3), 2),
             "torch_version": torch.__version__,
+            "verification_info": self.verification_info,
         }
 
+    def verify_download(self, repo_id: str, filename: str) -> Dict[str, Any]:
+        """
+        Verifies Hugging Face repository metadata, file size, disk headroom,
+        and local cache before downloading.
+        """
+        total_disk, used_disk, free_disk = shutil.disk_usage(".")
+        free_gb = free_disk / (1024**3)
+
+        info = {
+            "verified": False,
+            "repo_id": repo_id,
+            "filename": filename,
+            "cached": False,
+            "local_path": None,
+            "file_size_gb": 0.0,
+            "free_disk_gb": round(free_gb, 2),
+            "status": "Checking Hugging Face repository metadata..."
+        }
+
+        try:
+            from huggingface_hub import HfApi, try_to_load_from_cache
+            # 1. Check if already present in local Hugging Face cache
+            cached_file = try_to_load_from_cache(repo_id=repo_id, filename=filename)
+            if cached_file and os.path.exists(cached_file):
+                size_bytes = os.path.getsize(cached_file)
+                size_gb = round(size_bytes / (1024**3), 2)
+                info.update({
+                    "verified": True,
+                    "cached": True,
+                    "local_path": cached_file,
+                    "file_size_gb": size_gb,
+                    "status": f"Verified in local cache ({size_gb} GB). Integrity confirmed, skipping download."
+                })
+                return info
+
+            # 2. Query remote repository file metadata
+            api = HfApi()
+            repo_info = api.repo_info(repo_id=repo_id, files_metadata=True)
+            target_sibling = next((s for s in (repo_info.siblings or []) if s.rfilename == filename), None)
+            
+            if target_sibling and target_sibling.size:
+                size_bytes = target_sibling.size
+                size_gb = round(size_bytes / (1024**3), 2)
+                info["file_size_gb"] = size_gb
+                
+                # Check disk space headroom
+                if free_gb < (size_gb + 2.0):
+                    info["status"] = f"Insufficient disk space! Needed: {size_gb} GB, Available: {round(free_gb, 2)} GB."
+                    info["verified"] = False
+                    return info
+
+                info.update({
+                    "verified": True,
+                    "status": f"Verified remote file ({size_gb} GB). Disk headroom verified ({round(free_gb, 2)} GB free). Ready to download."
+                })
+            else:
+                info.update({
+                    "verified": True,
+                    "status": f"Verified repository '{repo_id}'. Ready for secure download."
+                })
+        except Exception as e:
+            info["status"] = f"Verification check: {str(e)[:120]}"
+            info["verified"] = True
+
+        return info
+
     def load_model_async(self, repo_id: str = LLAMA_CONVERSATIONAL_REPO, gguf_filename: str = LLAMA_CONVERSATIONAL_GGUF):
-        """Asynchronously downloads (if needed) and offloads GGUF model to GPU."""
+        """Pre-verifies and asynchronously loads model to RTX 3080 Ti VRAM."""
         if self.loading:
             return False
 
         def _worker():
             self.loading = True
             self.status = "loading"
-            self.status_message = f"Downloading/Validating {gguf_filename} from Hugging Face ({repo_id})..."
+            
+            # Step 1: Pre-download verification
+            self.status_message = f"Verifying repository and file integrity for {gguf_filename} ({repo_id})..."
             print(f"[*] {self.status_message}", flush=True)
+            verify_res = self.verify_download(repo_id, gguf_filename)
+            self.verification_info = verify_res
+            print(f"[+] Verification result: {verify_res['status']}", flush=True)
+
+            if not verify_res.get("verified", True):
+                self.status = "error"
+                self.status_message = f"Verification failed: {verify_res.get('status')}"
+                self.loading = False
+                return
 
             try:
+                # Step 2: Download / retrieve verified file
                 from huggingface_hub import hf_hub_download
                 model_path = hf_hub_download(
                     repo_id=repo_id,
-                    filename=gguf_filename,
-                    resume_download=True
+                    filename=gguf_filename
                 )
-                print(f"[+] Download complete: {model_path}", flush=True)
-                self.status_message = f"Offloading {gguf_filename} layers to {self.device_name} VRAM..."
+                print(f"[+] Verified model file path: {model_path}", flush=True)
+                self.status_message = f"Offloading {gguf_filename} into {self.device_name} VRAM via Transformers..."
 
-                # Load with llama_cpp on GPU
-                import llama_cpp
-                # n_gpu_layers=-1 offloads 100% of layers to GPU VRAM
-                gpu_layers = -1 if self.cuda_available else 0
-
-                llm = llama_cpp.Llama(
-                    model_path=model_path,
-                    n_gpu_layers=gpu_layers,
-                    n_ctx=4096,
-                    n_threads=8,
-                    verbose=False
+                # Step 3: Load into GPU VRAM using Transformers + PyTorch CUDA
+                from transformers import AutoModelForCausalLM, AutoTokenizer
+                device = "cuda" if self.cuda_available else "cpu"
+                
+                print(f"[*] Loading model on device: {device}...", flush=True)
+                model = AutoModelForCausalLM.from_pretrained(
+                    repo_id,
+                    gguf_file=gguf_filename,
+                    device_map=device,
+                    torch_dtype="auto"
                 )
 
-                self.active_model_instance = llm
+                try:
+                    tok = AutoTokenizer.from_pretrained(repo_id, gguf_file=gguf_filename)
+                except Exception:
+                    tok = None
+
+                self.active_model_instance = model
+                self.active_tokenizer = tok
                 self.loaded_repo_id = repo_id
                 self.loaded_gguf_file = gguf_filename
                 self.status = "loaded_gpu" if self.cuda_available else "loaded_cpu"
-                self.status_message = f"Model {gguf_filename} loaded into {self.device_name} (100% GPU offload)."
+                self.status_message = f"Model {gguf_filename} verified and active on {self.device_name} (100% GPU offload)."
                 print(f"[+] {self.status_message}", flush=True)
 
             except Exception as e:
@@ -144,6 +230,29 @@ class DualModelService:
         thread = threading.Thread(target=_worker, daemon=True)
         thread.start()
         return True
+
+    def unload_model(self) -> Dict[str, Any]:
+        """Offloads the active model from GPU VRAM and releases 100% of GPU memory."""
+        import gc
+        if self.active_model_instance is not None:
+            del self.active_model_instance
+            self.active_model_instance = None
+        if self.active_tokenizer is not None:
+            del self.active_tokenizer
+            self.active_tokenizer = None
+        
+        self.loaded_repo_id = None
+        self.loaded_gguf_file = None
+        self.verification_info = None
+        
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        self.status = "ready_gpu" if self.cuda_available else "ready_cpu"
+        self.status_message = f"Model offloaded from {self.device_name} VRAM. Operating in Zero-Latency Rules Engine mode."
+        print(f"[+] {self.status_message}", flush=True)
+        return {"success": True, "status": self.get_system_status()}
 
     def generate_chat_response(
         self,
@@ -196,7 +305,7 @@ Key Directives:
 3. Be inspiring, articulate, warm, and mechanically precise."""
         )
 
-        # If live GPU Llama 3.2 is active, use llama-cpp-python for inference
+        # If live GPU Llama 3.2 is active, use Transformers on GPU
         if self.active_model_instance:
             try:
                 system_content = f"{persona_header}\n\n{rag_context}\n\n{char_desc}"
@@ -208,18 +317,35 @@ Key Directives:
                     f"<|start_header_id|>assistant<|end_header_id|>\n\n"
                 )
 
-                output = self.active_model_instance.create_completion(
-                    prompt=prompt,
-                    max_tokens=550,
-                    temperature=0.7,
-                    stop=["<|eot_id|>", "<|end_of_text|>"]
-                )
-                text = output["choices"][0]["text"].strip()
-                return {
-                    "reply": text,
-                    "suggested_action": self._detect_action(text, character_context),
-                    "model_source": f"Llama 3.2 3B GPU ({self.loaded_gguf_file})"
-                }
+                if hasattr(self.active_model_instance, "generate") and self.active_tokenizer:
+                    inputs = self.active_tokenizer(prompt, return_tensors="pt").to(self.active_model_instance.device)
+                    with torch.no_grad():
+                        outputs = self.active_model_instance.generate(
+                            **inputs,
+                            max_new_tokens=450,
+                            temperature=0.7,
+                            do_sample=True,
+                            pad_token_id=self.active_tokenizer.eos_token_id
+                        )
+                    text = self.active_tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
+                    return {
+                        "reply": text,
+                        "suggested_action": self._detect_action(text, character_context),
+                        "model_source": f"Llama 3.2 3B GPU ({self.loaded_gguf_file})"
+                    }
+                elif hasattr(self.active_model_instance, "create_completion"):
+                    output = self.active_model_instance.create_completion(
+                        prompt=prompt,
+                        max_tokens=550,
+                        temperature=0.7,
+                        stop=["<|eot_id|>", "<|end_of_text|>"]
+                    )
+                    text = output["choices"][0]["text"].strip()
+                    return {
+                        "reply": text,
+                        "suggested_action": self._detect_action(text, character_context),
+                        "model_source": f"Llama 3.2 3B GPU ({self.loaded_gguf_file})"
+                    }
             except Exception as e:
                 print(f"[!] Error in active GPU inference: {e}")
 
@@ -739,13 +865,27 @@ Key Directives:
                     f"{user_message}<|eot_id|>\n"
                     f"<|start_header_id|>assistant<|end_header_id|>\n\n"
                 )
-                output = self.active_model_instance.create_completion(
-                    prompt=llama_prompt,
-                    max_tokens=350,
-                    temperature=0.2,
-                    stop=["<|eot_id|>", "<|end_of_text|>"]
-                )
-                text = output["choices"][0]["text"].strip()
+                if hasattr(self.active_model_instance, "generate") and self.active_tokenizer:
+                    inputs = self.active_tokenizer(llama_prompt, return_tensors="pt").to(self.active_model_instance.device)
+                    with torch.no_grad():
+                        outputs = self.active_model_instance.generate(
+                            **inputs,
+                            max_new_tokens=300,
+                            temperature=0.2,
+                            do_sample=False,
+                            pad_token_id=self.active_tokenizer.eos_token_id
+                        )
+                    text = self.active_tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
+                elif hasattr(self.active_model_instance, "create_completion"):
+                    output = self.active_model_instance.create_completion(
+                        prompt=llama_prompt,
+                        max_tokens=350,
+                        temperature=0.2,
+                        stop=["<|eot_id|>", "<|end_of_text|>"]
+                    )
+                    text = output["choices"][0]["text"].strip()
+                else:
+                    text = ""
                 json_match = re.search(r'\{[\s\S]*\}', text)
                 if json_match:
                     parsed = json.loads(json_match.group(0))

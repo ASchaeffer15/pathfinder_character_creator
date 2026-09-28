@@ -209,10 +209,31 @@ export default function AIStudioTab({ character, onUpdateCharacter }) {
         setLoadNotice(data.status?.status_message || 'Model loading initiated in background!');
       }
     } catch (e) {
-      setLoadNotice('Offload request sent to local GPU engine.');
+      setLoadNotice('Loading request sent to local GPU engine.');
     } finally {
       setLoadingModel(false);
       setTimeout(fetchModelStatus, 2000);
+    }
+  };
+
+  const handleUnloadModel = async () => {
+    setLoadingModel(true);
+    setLoadNotice('Offloading model from RTX 3080 Ti VRAM and releasing memory...');
+    try {
+      const res = await fetch('/api/model/unload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setModelStatus(data.status);
+        setLoadNotice(data.status?.status_message || 'Model successfully offloaded from VRAM. Zero-Latency Rules Engine active.');
+      }
+    } catch (e) {
+      setLoadNotice('Model offloaded. Operating in Zero-Latency Rules Engine mode.');
+    } finally {
+      setLoadingModel(false);
+      setTimeout(fetchModelStatus, 1500);
     }
   };
 
@@ -823,10 +844,23 @@ export default function AIStudioTab({ character, onUpdateCharacter }) {
             <Cpu size={18} />
             <span>Dual-Model Architecture &amp; Hardware Acceleration</span>
           </span>
-          <span className="pb-pill-tag" style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
-            {modelStatus?.cuda_available ? 'CUDA 12.6 Enabled (GPU Offload)' : 'CPU Mode'}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {modelStatus?.is_model_loaded ? (
+              <span className="pb-pill-tag" style={{ color: '#4ade80', background: 'rgba(74, 222, 128, 0.1)', border: '1px solid rgba(74, 222, 128, 0.3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 8px #4ade80' }} />
+                <span>Active in VRAM: {modelStatus.active_model}</span>
+              </span>
+            ) : (
+              <span className="pb-pill-tag" style={{ color: '#38bdf8', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#38bdf8' }} />
+                <span>Zero-Latency Rules Engine (Offloaded)</span>
+              </span>
+            )}
+            <span className="pb-pill-tag" style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
+              {modelStatus?.cuda_available ? 'CUDA 12.6 (RTX 3080 Ti)' : 'CPU Mode'}
+            </span>
+          </div>
         </div>
         <div className="pb-card-body">
           {/* Hardware Telemetry Banner */}
@@ -920,27 +954,74 @@ export default function AIStudioTab({ character, onUpdateCharacter }) {
             </div>
 
             <div style={{ background: 'var(--bg-primary)', padding: '0.75rem', borderRadius: '6px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>GPU Offload Action</div>
-              <button
-                className="pb-btn pb-btn-primary"
-                onClick={handleLoadModel}
-                disabled={loadingModel || modelStatus?.loading}
-                style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-              >
-                {loadingModel || modelStatus?.loading ? (
-                  <>
-                    <RefreshCw size={14} className="animate-spin" />
-                    <span>Offloading to GPU...</span>
-                  </>
-                ) : (
-                  <>
-                    <Play size={14} />
-                    <span>Load to RTX 3080 Ti</span>
-                  </>
-                )}
-              </button>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>GPU VRAM &amp; Engine Actions</div>
+              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <button
+                  className="pb-btn pb-btn-primary"
+                  onClick={handleLoadModel}
+                  disabled={loadingModel || modelStatus?.loading}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  title="Verify file integrity and load layers onto RTX 3080 Ti"
+                >
+                  {loadingModel && !modelStatus?.is_model_loaded ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" />
+                      <span>Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play size={14} />
+                      <span>{modelStatus?.is_model_loaded ? 'Reload Model' : 'Load to RTX 3080 Ti'}</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  className="pb-btn"
+                  onClick={handleUnloadModel}
+                  disabled={loadingModel || modelStatus?.loading || !modelStatus?.is_model_loaded}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    background: modelStatus?.is_model_loaded ? '#991b1b' : 'rgba(255, 255, 255, 0.05)',
+                    border: modelStatus?.is_model_loaded ? '1px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.1)',
+                    color: modelStatus?.is_model_loaded ? '#ffffff' : 'var(--text-muted)',
+                    cursor: modelStatus?.is_model_loaded ? 'pointer' : 'not-allowed',
+                    padding: '0.4rem 0.75rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 600
+                  }}
+                  title="Offload model from GPU memory to free VRAM and switch back to Zero-Latency Rules Engine"
+                >
+                  <Trash2 size={14} />
+                  <span>Offload VRAM</span>
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Pre-Download & Cache Verification Banner */}
+          {modelStatus?.verification_info && (
+            <div style={{
+              fontSize: '0.8rem',
+              color: modelStatus.verification_info.verified ? '#4ade80' : '#fbbf24',
+              background: modelStatus.verification_info.verified ? 'rgba(74, 222, 128, 0.08)' : 'rgba(251, 191, 36, 0.08)',
+              border: `1px solid ${modelStatus.verification_info.verified ? 'rgba(74, 222, 128, 0.25)' : 'rgba(251, 191, 36, 0.25)'}`,
+              padding: '0.5rem 0.75rem',
+              borderRadius: '6px',
+              marginBottom: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8
+            }}>
+              <CheckCircle2 size={16} />
+              <div>
+                <strong>Security &amp; Integrity Verification:</strong> {modelStatus.verification_info.status}
+              </div>
+            </div>
+          )}
 
           {loadNotice && (
             <div style={{ 

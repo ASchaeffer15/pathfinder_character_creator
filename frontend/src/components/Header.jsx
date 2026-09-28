@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Shield, Heart, Eye, Activity, Sparkles, Dices, 
-  RotateCcw, Download, Upload, Bot, Moon
+  RotateCcw, Download, Upload, Bot, Moon, Compass
 } from 'lucide-react';
 
 export default function Header({ 
@@ -12,7 +12,8 @@ export default function Header({
   onToggleAiDrawer, 
   aiDrawerOpen,
   onExportJson,
-  onImportJson
+  onImportJson,
+  onOpenTour
 }) {
   const handleHpChange = (amount) => {
     const newHp = Math.max(0, Math.min(character.maxHp, character.currentHp + amount));
@@ -91,6 +92,15 @@ export default function Header({
               onChange={onImportJson} 
             />
           </label>
+
+          <button 
+            className="pb-action-btn"
+            onClick={onOpenTour}
+            title="Interactive App Tour (Shepherd)"
+          >
+            <Compass size={16} style={{ color: '#d97706' }} />
+            <span>Tour</span>
+          </button>
 
           <button 
             className={`pb-action-btn ai-trigger ${aiDrawerOpen ? 'active' : ''}`}
