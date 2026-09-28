@@ -244,8 +244,8 @@ export default function App() {
             <span style={{ marginLeft: 8 }}>
               Roll [{lastDiceBanner.rolls.join(', ')}] = <strong style={{ fontSize: '1.1rem' }}>{lastDiceBanner.result}</strong>
             </span>
-            {lastDiceBanner.isNat20 && <span style={{ marginLeft: 10, background: '#fbbf24', color: '#121620', padding: '0.1rem 0.4rem', borderRadius: 4, fontWeight: 800 }}>NAT 20! CRITICAL SUCCESS!</span>}
-            {lastDiceBanner.isNat1 && <span style={{ marginLeft: 10, background: '#ef4444', color: '#fff', padding: '0.1rem 0.4rem', borderRadius: 4, fontWeight: 800 }}>NAT 1! CRITICAL FAILURE!</span>}
+            {lastDiceBanner.isNat20 && <span style={{ marginLeft: 10, background: '#d97706', color: '#ffffff', padding: '0.1rem 0.4rem', borderRadius: 4, fontWeight: 800 }}>NAT 20! CRITICAL SUCCESS!</span>}
+            {lastDiceBanner.isNat1 && <span style={{ marginLeft: 10, background: '#ef4444', color: '#ffffff', padding: '0.1rem 0.4rem', borderRadius: 4, fontWeight: 800 }}>NAT 1! CRITICAL FAILURE!</span>}
           </div>
           <button onClick={() => setLastDiceBanner(null)} style={{ color: '#fff', opacity: 0.8 }}>✕</button>
         </div>

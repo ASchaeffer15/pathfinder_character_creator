@@ -241,7 +241,7 @@ export default function FeatsTab({ character, onUpdateCharacter }) {
                 style={{
                   background: 'var(--bg-secondary)',
                   border: '1px solid var(--border-medium)',
-                  color: 'var(--text-primary)',
+                  color: 'var(--text-main)',
                   padding: '0.3rem 0.6rem',
                   borderRadius: '4px',
                   fontSize: '0.75rem'

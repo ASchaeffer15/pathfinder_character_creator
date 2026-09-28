@@ -532,8 +532,8 @@ export default function AIChatDrawer({
                       <span>Level {msg.action.character?.level || 19} Hero Build Ready</span>
                     </span>
                     <span style={{ 
-                      background: '#10b981', 
-                      color: '#0f172a', 
+                      background: '#059669', 
+                      color: '#ffffff', 
                       padding: '0.15rem 0.5rem', 
                       borderRadius: '4px', 
                       fontSize: '0.68rem', 
@@ -544,7 +544,7 @@ export default function AIChatDrawer({
                   </div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginBottom: '0.75rem', lineHeight: 1.4 }}>
                     <strong>{msg.action.character?.name}</strong> • {msg.action.character?.ancestry} {msg.action.character?.class}
-                    <div style={{ display: 'flex', gap: 10, marginTop: 3, color: 'var(--text-primary)', fontWeight: 600 }}>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 3, color: 'var(--text-main)', fontWeight: 600 }}>
                       <span>❤️ {msg.action.character?.maxHp} HP</span>
                       <span>🛡️ {msg.action.character?.ac} AC</span>
                       <span>⚔️ {msg.action.character?.strikes?.[0]?.attackBonus ? `+${msg.action.character.strikes[0].attackBonus} Attack` : ''}</span>
@@ -559,7 +559,8 @@ export default function AIChatDrawer({
                       fontSize: '0.82rem', 
                       padding: '0.55rem',
                       background: 'linear-gradient(135deg, var(--gold-600) 0%, var(--gold-500) 100%)',
-                      color: '#121620'
+                      color: '#ffffff',
+                      textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)'
                     }}
                     onClick={() => handleApplyAction(msg.action)}
                   >

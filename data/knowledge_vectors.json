@@ -29,6 +29,12 @@
       "title": "Custom Feats (Pathfinder_2e_Feats_Template.xlsx)",
       "chunks": 7,
       "added_at": "Active Vector Memory"
+    },
+    {
+      "id": "doc_6_8011",
+      "title": "House Rule",
+      "chunks": 1,
+      "added_at": "Active Vector Memory"
     }
   ],
   "chunks": [
@@ -1070,6 +1076,23 @@
         "homebrew",
         "three",
         "path"
+      ]
+    },
+    {
+      "doc_id": "doc_6_8011",
+      "doc_title": "House Rule",
+      "chunk_id": 1,
+      "text": "In our campaign, silver weapons deal double damage against fiends.",
+      "terms": [
+        "our",
+        "weapons",
+        "fiends",
+        "deal",
+        "campaign",
+        "damage",
+        "against",
+        "double",
+        "silver"
       ]
     }
   ]

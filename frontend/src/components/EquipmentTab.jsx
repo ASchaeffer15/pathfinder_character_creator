@@ -359,7 +359,7 @@ export default function EquipmentTab({ character, onUpdateCharacter }) {
                 <button 
                   className="pb-action-btn"
                   onClick={handleAddItem}
-                  style={{ background: 'var(--gold-500)', color: '#121620', fontWeight: 700, fontSize: '0.75rem' }}
+                  style={{ background: 'var(--gold-600)', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem' }}
                 >
                   Add
                 </button>

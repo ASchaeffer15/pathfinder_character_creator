@@ -1045,8 +1045,9 @@ export default function AIStudioTab({ character, onUpdateCharacter }) {
               style={{
                 marginTop: 6,
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%)',
-                color: '#121620',
+                background: 'linear-gradient(135deg, var(--gold-600) 0%, var(--gold-500) 100%)',
+                color: '#ffffff',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
                 fontWeight: 700,
                 padding: '0.65rem'
               }}
@@ -1111,7 +1112,7 @@ export default function AIStudioTab({ character, onUpdateCharacter }) {
                   className="pb-action-btn"
                   onClick={handleTestSearch}
                   disabled={searching}
-                  style={{ background: 'var(--gold-500)', color: '#121620', fontWeight: 600 }}
+                  style={{ background: 'var(--gold-600)', color: '#ffffff', fontWeight: 600 }}
                 >
                   {searching ? 'Querying...' : 'Search'}
                 </button>

@@ -491,8 +491,8 @@ export default function TacticalAdvisorTab({ character, onUpdateCharacter, onRol
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           <span style={{ 
-                            background: 'var(--gold-500)', 
-                            color: '#121620', 
+                            background: 'var(--gold-600)', 
+                            color: '#ffffff', 
                             fontSize: '0.72rem', 
                             fontWeight: 800,
                             padding: '0.15rem 0.45rem',
@@ -533,8 +533,8 @@ export default function TacticalAdvisorTab({ character, onUpdateCharacter, onRol
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                         <span style={{ 
-                          background: '#38bdf8', 
-                          color: '#0f172a', 
+                          background: '#0284c7', 
+                          color: '#ffffff', 
                           fontSize: '0.7rem', 
                           fontWeight: 800, 
                           padding: '0.1rem 0.4rem', 

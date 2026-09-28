@@ -36,7 +36,7 @@ export default function Footer() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#121620'
+          color: '#ffffff'
         }}>
           <Shield size={12} strokeWidth={2.5} />
         </div>

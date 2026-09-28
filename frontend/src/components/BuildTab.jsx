@@ -315,7 +315,8 @@ export default function BuildTab({ character, onUpdateCharacter }) {
 
             <div style={{ 
               background: 'linear-gradient(135deg, var(--gold-600) 0%, var(--gold-500) 100%)',
-              color: '#121620',
+              color: '#ffffff',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
               fontWeight: 800,
               fontSize: '1rem',
               padding: '0.3rem 0.85rem',
